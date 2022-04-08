@@ -1,23 +1,35 @@
-function getTime() { // This function gets the time that is currently on the timer.
-  const bf = document.querySelector('#last-reap').textContent.split(' ');
-  if (bf.length === 6) {
-    return parseInt(bf[0], 10) * 3600 + parseInt(bf[2], 10) * 60 + parseInt(bf[4], 10);
-  } else if (bf.length === 4) {
-    return parseInt(bf[0], 10) * 60 + parseInt(bf[2], 10);
-  }
-  return parseInt(bf[0], 10);
-}
-
-function reapWhen(numSeconds) { // This function clicks the 'reap' button when the timer reaches numSeconds.
-  setInterval(()  => {
-    const time = getTime();
-    console.log('Time available: ' + time);
-    if (time >= numSeconds && document.querySelector('#reap-button-container').style.display !== 'none') {
-      document.querySelector('#reap-button').click();
-      console.log('Click-Reaped!');
+(function() {
+    function getTime(){ //this function gets the time that is currently on the timer
+        const count = document.querySelector('#last-reap').textContent.split(' ');
+        if(count.length === 4){
+            return parseInt(count[0], 10) * 60 + parseInt(count[2], 10);
+        } else if(count.length === 2 && ((count[1] == "minute") || (count[1] == "minutes"))){
+            return parseInt(count[0], 10) * 60;
+        } else if(count.length === 6){
+            return parseInt(count[0], 10) * 3600 + parseInt(count[2], 10) * 60 + parseInt(count[4], 10);
+        } else if(count.length === 2 && ((count[1] == "hour") || (count[1] == "hours"))){
+            return parseInt(count[0], 10) * 3600;
+        }
+        return parseInt(count[0], 10);
     }
-  }, 5000);
-}
-
-const desiredTime = 500 // Measured in seconds.
-reapWhen(desiredTime)
+    //this function immediately clicks button when timer reaches n seconds, and clicks free reap button when timer reaches f seconds
+    (function awaitTimeAndReap(n, f){ 
+        setInterval(() => {
+            try{
+                const TIMER = getTime();
+                console.log("Current time: " + TIMER);
+                if(document.querySelector('#reap-button-container').style.display !== 'none' && TIMER >= n){
+                    document.querySelector('#reap-button').click();
+                    console.log("Reaped!");
+                } else if(document.querySelector('#free-reap-container').style.display !== 'none' && TIMER >= f){
+                    document.querySelector('#free-reap-container').click();
+                    console.log("Free Reaped!");
+                }
+            } catch(e) {
+                console.err(e);
+            } finally {
+                (OBS=>new MutationObserver(_=>document.title=OBS.html()).observe(OBS[0],{childList:1}))($('#last-reap')) //Display curr time as tab title
+            }
+        }, 200);
+    })(100, 400); //change these vals (in seconds) if you want
+})();
